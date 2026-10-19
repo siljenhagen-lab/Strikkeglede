@@ -31,20 +31,34 @@ export async function resizeImage(blob, maxDim = 2400, quality = 0.86) {
   return canvasToBlob(c, 'image/jpeg', quality);
 }
 
-/** Beskjærer et bilde. crop = {t, b, l, r} i prosent som skal fjernes fra hver kant. */
+/** Tegner bildet rotert rundt midten (samme størrelse), skalert slik at lengste side er maks maxDim. */
+export function drawRotated(img, rotDeg, maxDim) {
+  const W = img.naturalWidth || img.width, H = img.naturalHeight || img.height;
+  const s = Math.min(1, maxDim / Math.max(W, H));
+  const c = document.createElement('canvas');
+  c.width = Math.round(W * s);
+  c.height = Math.round(H * s);
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate(((rotDeg || 0) * Math.PI) / 180);
+  ctx.drawImage(img, -c.width / 2, -c.height / 2, c.width, c.height);
+  return c;
+}
+
+/** Roterer og beskjærer et bilde. crop = {t, b, l, r} i prosent som fjernes fra hver kant, rot i grader. */
 export async function cropImage(blob, crop, maxDim = 2400) {
   const img = await loadImage(blob);
   const W = img.naturalWidth, H = img.naturalHeight;
-  const sx = W * crop.l / 100, sy = H * crop.t / 100;
   const sw = W * (100 - crop.l - crop.r) / 100, sh = H * (100 - crop.t - crop.b) / 100;
   const s = Math.min(1, maxDim / Math.max(sw, sh));
+  const full = drawRotated(img, crop.rot || 0, Math.max(W, H) * s);
   const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(sw * s));
-  c.height = Math.max(1, Math.round(sh * s));
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  c.width = Math.max(1, Math.round(full.width * (100 - crop.l - crop.r) / 100));
+  c.height = Math.max(1, Math.round(full.height * (100 - crop.t - crop.b) / 100));
+  c.getContext('2d').drawImage(full, full.width * crop.l / 100, full.height * crop.t / 100, c.width, c.height, 0, 0, c.width, c.height);
+  full.width = full.height = 0;
   return canvasToBlob(c);
 }
 

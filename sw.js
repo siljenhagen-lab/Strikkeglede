@@ -1,6 +1,6 @@
 // Service worker: gjør Strikkeglede tilgjengelig uten nett.
 // Øk VERSION ved hver endring, så får brukerne tilbud om oppdatering.
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE = 'strikkeglede-' + VERSION;
 const ASSETS = [
   './',
@@ -10,6 +10,7 @@ const ASSETS = [
   'js/app.js',
   'js/backup.js',
   'js/data.js',
+  'js/grid.js',
   'js/db.js',
   'js/media.js',
   'js/pwa.js',
