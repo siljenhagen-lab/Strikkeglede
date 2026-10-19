@@ -8,6 +8,8 @@ En app for deg som strikker. Den installeres fra nettleseren (PWA) og virker ute
 
 - **Prosjekter**: det du strikker nå (aktive øverst) og prosjekter på vent.
 - **Oppskrifter**: oppskriftsbanken din som tabell med navn, størrelse (store bokstaver), pinner og rundpinner, og status. Hver oppskrift kan ha PDF, bilder, tekst og/eller bare mønster.
+- **Automatisk rutenett**: appen finner rutene i bildet av diagrammet, retter opp skjeve bilder og teller rader og masker, slik at radlinjene treffer.
+- **Tegnforklaring**: velg et utsnitt av bildet (eller et eget bilde) og/eller skriv forklaringen. Den vises over mønsteret mens du strikker.
 - **Mønster med radteller**: trykk på en rad for å hake den av. Ferdige rader blir gjennomsiktig grønne, så du ser mønsteret bak. Mønstre som repeteres får en kolonne som teller hvor mange ganger du har strikket dem, og «Ny runde» blanker ut radene. Skjermen holdes våken.
 - **Strikk på nytt**: starter et nytt aktivt prosjekt; de gamle ligger i historikken med 1–3 bilder av resultatet og en kommentar.
 - **Pinner**: oversikt over alle pinnestørrelser, pinner/rundpinner, T (tre) og M (metall).

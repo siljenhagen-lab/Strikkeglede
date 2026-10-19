@@ -190,9 +190,8 @@ table.recipes td.needles { white-space: nowrap; }
 .pv-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; background: var(--surface-2); padding: 10px; position: relative; }
 .pv-stage { position: relative; margin: 0 auto; width: 100%; }
 .pv-stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.rows { position: absolute; inset: 0; display: flex; flex-direction: column; }
-.rows.up { flex-direction: column-reverse; }
-.rows .r { flex: 1; border: 0; padding: 0; min-height: 0; border-radius: 0; background: transparent; border-bottom: 1px solid rgba(0,0,0,.08); cursor: pointer; }
+.rows { position: absolute; inset: 0; }
+.rows .r { position: absolute; left: 0; right: 0; border: 0; padding: 0; min-height: 0; border-radius: 0; background: transparent; border-bottom: 1px solid rgba(0,0,0,.08); cursor: pointer; }
 .rows .r.done { background: var(--done); }
 .rows .r.next { outline: 3px dashed var(--next); outline-offset: -2px; background: rgba(242,163,58,.12); }
 .pv-zoom { position: sticky; top: 0; float: right; z-index: 2; display: flex; gap: 6px; }
@@ -215,10 +214,7 @@ table.recipes td.needles { white-space: nowrap; }
 /* ---------- Pattern editor ---------- */
 .crop-stage { position: relative; overflow: hidden; border-radius: 10px; background: #000; margin-bottom: 12px; }
 .crop-stage img { display: block; width: 100%; opacity: .95; }
-.crop-box { position: absolute; box-shadow: 0 0 0 9999px rgba(0,0,0,.5); outline: 2px solid var(--sun); display: flex; flex-direction: column; pointer-events: none; }
-.crop-box.up { flex-direction: column-reverse; }
-.crop-box > div { flex: 1; border-bottom: 1px solid rgba(242,163,58,.85); }
-.crop-box > div:first-child { background: rgba(46,160,67,.35); }
+.crop-box { position: absolute; box-shadow: 0 0 0 9999px rgba(0,0,0,.5); outline: 2px solid var(--sun); pointer-events: none; }
 .sliders { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; margin-bottom: 14px; }
 .sliders span { font-size: .85rem; color: var(--muted); font-weight: 600; }
 .stepper { display: flex; gap: 6px; align-items: center; }
@@ -286,3 +282,19 @@ details.card[open] summary { margin-bottom: 8px; }
   .proj-card { grid-template-columns: 96px 1fr; }
   .thumb { width: 96px; height: 96px; }
 }
+
+/* ---------- Ramme, rutenett og tegnforklaring ---------- */
+.crop-wrap { position: relative; margin-bottom: 12px; }
+.crop-scroll { overflow: auto; max-height: 70vh; border-radius: 10px; background: #000; }
+.crop-scroll .crop-stage { margin: 0; border-radius: 0; width: 100%; }
+.crop-zoom { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
+.crop-zoom button { min-height: 34px; width: 34px; padding: 0; font-size: 1.1rem; box-shadow: var(--shadow); }
+.crop-box .line { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid rgba(242,163,58,.95); }
+.crop-box .first-row { position: absolute; left: 0; right: 0; background: rgba(46,160,67,.4); }
+.crop-stage img { transform-origin: 50% 50%; }
+.grid-info { color: var(--muted); }
+.grid-info.ok { color: var(--done-solid); font-weight: 600; }
+.legend-panel { max-height: 32vh; overflow: auto; background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px 12px; }
+.legend-panel img { display: block; max-width: 100%; max-height: 24vh; margin: 0 auto; cursor: zoom-in; border-radius: 6px; }
+.legend-text { white-space: pre-wrap; font-size: .92rem; margin-top: 6px; }
+.topbar button.on { background: var(--sun); border-color: var(--sun); color: #3a2a12; }
