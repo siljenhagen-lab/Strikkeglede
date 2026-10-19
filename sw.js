@@ -1,6 +1,6 @@
 // Service worker: gjør Strikkeglede tilgjengelig uten nett.
 // Øk VERSION ved hver endring, så får brukerne tilbud om oppdatering.
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const CACHE = 'strikkeglede-' + VERSION;
 const ASSETS = [
   './',
@@ -8,7 +8,9 @@ const ASSETS = [
   'manifest.webmanifest',
   'css/app.css',
   'js/app.js',
+  'js/ai.js',
   'js/backup.js',
+  'js/chart.js',
   'js/data.js',
   'js/grid.js',
   'js/db.js',
@@ -16,6 +18,7 @@ const ASSETS = [
   'js/pwa.js',
   'js/router.js',
   'js/ui.js',
+  'js/views/chart-editor.js',
   'js/views/more.js',
   'js/views/needles.js',
   'js/views/pattern.js',
@@ -29,6 +32,7 @@ const ASSETS = [
   'icons/icon-maskable-512.png',
   'icons/apple-touch-icon.png',
   'icons/favicon-32.png',
+  'vendor/anthropic/anthropic-sdk.min.mjs',
   'vendor/pdfjs/pdf.min.mjs',
   'vendor/pdfjs/pdf.worker.min.mjs',
   'vendor/pdfjs/standard_fonts/FoxitDingbats.pfb',

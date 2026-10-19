@@ -1,7 +1,7 @@
 // Installasjon og oppdatering av appen (service worker).
 import { toast } from './ui.js';
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 
 let installPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {

@@ -168,5 +168,6 @@ export async function detectGrid(blob, crop, rot = 0) {
     rowLines: ys.map((y) => (y - top) / (bottom - top)),
     rows: ys.length - 1,
     cols: xs ? xs.length - 1 : null,
+    colLines: xs ? xs.map((x) => (x - left) / (right - left)) : null,
   };
 }

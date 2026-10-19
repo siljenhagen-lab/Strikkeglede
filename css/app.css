@@ -298,3 +298,31 @@ details.card[open] summary { margin-bottom: 8px; }
 .legend-panel img { display: block; max-width: 100%; max-height: 24vh; margin: 0 auto; cursor: zoom-in; border-radius: 6px; }
 .legend-text { white-space: pre-wrap; font-size: .92rem; margin-top: 6px; }
 .topbar button.on { background: var(--sun); border-color: var(--sun); color: #3a2a12; }
+
+/* ---------- Digitalt diagram ---------- */
+.cgrid-wrap { position: relative; overflow: auto; max-height: 62vh; background: var(--surface-2); border-radius: 10px; padding: 8px; margin-bottom: 8px; }
+.cgrid { display: grid; position: relative; width: max-content; margin: 0 auto; background: #fff; line-height: 1; }
+.cgrid .cc { border: 0.5px solid #8a8a8a; display: flex; align-items: center; justify-content: center; color: #222; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.cgrid .cc.rt { border-top: 3px solid #d6262b; }
+.cgrid .cc.rb { border-bottom: 3px solid #d6262b; }
+.cgrid .cc.rl { border-left: 3px solid #d6262b; }
+.cgrid .cc.rr { border-right: 3px solid #d6262b; }
+.cgrid .cno { display: flex; align-items: center; justify-content: center; font-size: .7em; color: #777; background: var(--surface-2); }
+.cgrid.over .cc { position: relative; z-index: 1; opacity: .5; }
+.cgrid-photo { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; }
+.palette { display: flex; flex-wrap: wrap; gap: 6px; }
+.pal { min-height: 40px; padding: 4px 10px 4px 4px; border-radius: 10px; gap: 8px; max-width: 100%; }
+.pal.on { border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.pal .sw { width: 30px; height: 30px; border: 1px solid #888; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; color: #222; font-size: 1.1rem; flex: none; }
+.pal .pm { font-size: .85rem; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.sym-edit { display: grid; grid-template-columns: 52px 44px 1fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
+.sym-edit input[type=color] { width: 44px; height: 44px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.glyph-in { text-align: center; font-size: 1.2rem; }
+.size-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+.size-grid input { max-width: 110px; }
+.ai-working { text-align: center; padding: 28px 16px; }
+.spinner { width: 42px; height: 42px; margin: 0 auto 12px; border-radius: 50%; border: 4px solid var(--line); border-top-color: var(--sun); animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.legend-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: .92rem; }
+.legend-list .sw { width: 26px; height: 26px; border: 1px solid #888; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; color: #222; }
+.pv-status .mode { min-height: 32px; padding: 2px 10px; font-size: .85rem; }

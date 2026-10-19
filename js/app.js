@@ -5,6 +5,7 @@ import { recipesView, recipeView, recipeFormView } from './views/recipes.js';
 import { projectView } from './views/project.js';
 import { patternView, patternEditorView } from './views/pattern.js';
 import { fileView } from './views/viewer.js';
+import { chartEditorView } from './views/chart-editor.js';
 import { needlesView } from './views/needles.js';
 import { moreView } from './views/more.js';
 
@@ -18,6 +19,7 @@ route(/^\/oppskrift\/([^/]+)\/rediger$/, null, recipeFormView);
 route(/^\/oppskrift\/([^/]+)\/nytt-monster$/, null, (m, q) => patternEditorView(m, q));
 route(/^\/monster\/([^/]+)$/, null, patternView);
 route(/^\/monster\/([^/]+)\/rediger$/, null, (m, q) => patternEditorView(m, q, { editId: m[1] }));
+route(/^\/monster\/([^/]+)\/diagram$/, null, chartEditorView);
 route(/^\/prosjekt\/([^/]+)$/, null, projectView);
 route(/^\/fil\/([^/]+)$/, null, fileView);
 

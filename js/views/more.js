@@ -2,6 +2,7 @@ import { h, topbar, toast, dialog, pickFiles } from '../ui.js';
 import { exportAll, importAll } from '../backup.js';
 import { getInstallPrompt, clearInstallPrompt, checkForUpdate, APP_VERSION } from '../pwa.js';
 import { rerender } from '../router.js';
+import { getApiKey, setApiKey } from '../ai.js';
 
 const APP_URL = new URL('./', location.href).href.replace(/#.*$/, '');
 
@@ -22,6 +23,15 @@ function fmtBytes(n) {
 
 export async function moreView() {
   const plat = platform();
+  const apiKey = await getApiKey();
+  const keyInput = h('input', { type: 'password', placeholder: 'sk-ant-…', autocomplete: 'off', value: apiKey });
+  const saveKey = async () => {
+    const v = keyInput.value.trim();
+    if (v && !v.startsWith('sk-ant-')) { toast('Nøkkelen skal starte med «sk-ant-»'); return; }
+    await setApiKey(v);
+    toast(v ? 'API-nøkkelen er lagret på denne enheten' : 'API-nøkkelen er fjernet');
+    rerender();
+  };
 
   /* --- lagring --- */
   const storageInfo = h('p', { class: 'muted small' });
@@ -99,7 +109,7 @@ export async function moreView() {
           h('div', null, h('h3', null, 'Strikkeglede'), h('span', { class: 'muted small' }, `Versjon ${APP_VERSION}`))),
         h('p', null, 'Strikkeglede samler strikkeoppskriftene dine på ett sted. Last inn PDF-en du har kjøpt eller ta bilde av en papiroppskrift, og legg inn mønsteret for å hake av rad for rad – radene blir grønne, men du ser fortsatt mønsteret. Repeterende mønstre telles automatisk.'),
         h('p', null, 'Hold styr på aktive prosjekter, størrelser og pinner, strikk en oppskrift på nytt med full historikk, og ta bilder av det ferdige resultatet med en kommentar til neste gang. Under «Pinner» har du oversikt over pinnene du eier.'),
-        h('p', { class: 'muted small' }, 'Alt lagres kun på denne enheten – ingenting sendes til nettet. Appen virker også uten nett, f.eks. på flyet, og skjermen holdes våken mens du ser på et mønster.')),
+        h('p', { class: 'muted small' }, 'Alt lagres kun på denne enheten – ingenting sendes til nettet, med unntak av bilder du selv velger å få tolket med AI. Appen virker også uten nett, f.eks. på flyet, og skjermen holdes våken mens du ser på et mønster.')),
 
       h('h2', null, 'Dine data'),
       h('div', { class: 'card' },
@@ -109,6 +119,19 @@ export async function moreView() {
           h('button', { class: 'primary', onclick: () => doExport(false) }, '⬇ Eksporter (last ned)'),
           canShareFiles ? h('button', { onclick: () => doExport(true) }, '↗ Del / lagre i Filer') : null,
           h('button', { onclick: doImport }, '⬆ Importer'))),
+
+      h('h2', null, 'AI-tolkning av diagrammer'),
+      h('div', { class: 'card' },
+        h('p', null, 'Strikkeglede kan gjøre et bilde av et diagram om til et digitalt diagram du kan redigere. Det bruker Claude fra Anthropic og krever nett og en egen API-nøkkel.'),
+        h('ol', { class: 'steps small' },
+          h('li', null, 'Lag en konto og en API-nøkkel på ', h('a', { href: 'https://platform.claude.com/settings/keys', target: '_blank', rel: 'noopener' }, 'platform.claude.com'), ' og fyll på litt kreditt.'),
+          h('li', null, 'Lim inn nøkkelen her og trykk «Lagre».'),
+          h('li', null, 'Åpne et mønster, trykk ✎ og velg «Lag digitalt diagram».')),
+        h('p', { class: 'muted small' }, 'En tolkning koster typisk noen få kroner, avhengig av hvor stort diagrammet er. Nøkkelen lagres bare på denne enheten (den blir ikke med i eksporten), og bare bildet av mønsteret og tegnforklaringen sendes til Anthropic.'),
+        h('label', { class: 'field' }, h('span', null, apiKey ? 'API-nøkkel (lagret)' : 'API-nøkkel'), keyInput),
+        h('div', { class: 'row' },
+          h('button', { class: 'primary small', onclick: saveKey }, 'Lagre'),
+          apiKey ? h('button', { class: 'small', onclick: () => { keyInput.value = ''; saveKey(); } }, 'Fjern nøkkel') : null)),
 
       h('h2', null, 'Installer på telefon / nettbrett'),
       isInstalled()

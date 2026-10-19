@@ -46,7 +46,8 @@ function decode(value) {
 export async function exportAll() {
   const stores = {};
   for (const s of DATA_STORES) stores[s] = await encode(await db.all(s));
-  const kv = await encode(await db.kvEntries());
+  // API-nøkkelen hører til enheten og tas ikke med i sikkerhetskopien.
+  const kv = await encode((await db.kvEntries()).filter(([k]) => k !== 'apiKey'));
   const payload = { app: 'Strikkeglede', format: 1, exportedAt: new Date().toISOString(), stores, kv };
   const json = JSON.stringify(payload);
   const date = new Date().toISOString().slice(0, 10);
@@ -64,6 +65,7 @@ export async function importAll(file, mode) {
   if (!payload || payload.app !== 'Strikkeglede' || !payload.stores) {
     throw new Error('Filen ser ikke ut til å være en sikkerhetskopi fra Strikkeglede.');
   }
+  const apiKey = await db.get('kv', 'apiKey');
   if (mode === 'replace') await db.clearAll();
   const counts = {};
   for (const s of DATA_STORES) {
@@ -71,7 +73,9 @@ export async function importAll(file, mode) {
     for (const item of items) await db.put(s, item);
     counts[s] = items.length;
   }
+  if (mode === 'replace' && apiKey) await db.put('kv', apiKey, 'apiKey');
   for (const [k, v] of decode(payload.kv || [])) {
+    if (k === 'apiKey') continue;
     if (mode === 'merge' && k === 'needles') {
       const cur = (await db.get('kv', 'needles')) || {};
       await db.put('kv', { ...cur, ...v }, k);

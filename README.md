@@ -10,6 +10,7 @@ En app for deg som strikker. Den installeres fra nettleseren (PWA) og virker ute
 - **Oppskrifter**: oppskriftsbanken din som tabell med navn, størrelse (store bokstaver), pinner og rundpinner, og status. Hver oppskrift kan ha PDF, bilder, tekst og/eller bare mønster.
 - **Automatisk rutenett**: appen finner rutene i bildet av diagrammet, retter opp skjeve bilder og teller rader og masker, slik at radlinjene treffer.
 - **Tegnforklaring**: velg et utsnitt av bildet (eller et eget bilde) og/eller skriv forklaringen. Den vises over mønsteret mens du strikker.
+- **Digitalt diagram med AI**: Claude leser symbolene i bildet ved hjelp av tegnforklaringen og lager et diagram du kan redigere rute for rute (symboler, farger, rader/masker, rapport). Krever nett og en egen API-nøkkel (legges inn under «Mer», lagres kun på enheten). Strikkingen etterpå virker offline.
 - **Mønster med radteller**: trykk på en rad for å hake den av. Ferdige rader blir gjennomsiktig grønne, så du ser mønsteret bak. Mønstre som repeteres får en kolonne som teller hvor mange ganger du har strikket dem, og «Ny runde» blanker ut radene. Skjermen holdes våken.
 - **Strikk på nytt**: starter et nytt aktivt prosjekt; de gamle ligger i historikken med 1–3 bilder av resultatet og en kommentar.
 - **Pinner**: oversikt over alle pinnestørrelser, pinner/rundpinner, T (tre) og M (metall).
@@ -30,5 +31,7 @@ Manifestet har `id`, `start_url` og `scope` satt til `/Strikkeglede/`, og servic
 Ingen byggesteg – rene HTML/CSS/JS-filer. Ved endringer: øk `VERSION` i `sw.js` (og `APP_VERSION` i `js/pwa.js`). Brukerne får da beskjed om ny versjon. Nye filer må legges til i `ASSETS` i `sw.js` for å virke offline.
 
 Lokal test: server mappen slik at den ligger under `/Strikkeglede/`, f.eks. med en mappe som inneholder en lenke `Strikkeglede -> repoet` og `python3 -m http.server`.
+
+AI-tolkningen bruker [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript) (MIT), bundlet til `vendor/anthropic/`.
 
 PDF-visning bruker [pdf.js](https://mozilla.github.io/pdf.js/) (Apache 2.0), lagt i `vendor/pdfjs/`.

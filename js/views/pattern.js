@@ -2,7 +2,8 @@ import { h, topbar, objUrl, emptyState, pickFiles, confirmDlg, toast, dialog, sh
 import { getRecipeBundle, saveProject, progressOf } from '../data.js';
 import * as db from '../db.js';
 import { resizeImage, cropImage, openPdf, renderPdfPage, pdfPageToBlob, isPdf } from '../media.js';
-import { navigate } from '../router.js';
+import { navigate, rerender } from '../router.js';
+import { chartToBlob } from '../chart.js';
 import { detectGrid } from '../grid.js';
 import { startProjectDialog } from './project.js';
 
@@ -43,7 +44,12 @@ export async function patternView(m, q) {
 
   /* --- radknapper over bildet --- */
   // Radlinjer ovenfra og ned (fra automatisk gjenkjenning), ellers jevnt fordelt.
-  const lines = rowLinesOf(pattern);
+  // Digitalt diagram (hvis laget) eller bildet.
+  const chart = pattern.chart && pattern.chart.rows === rows ? pattern.chart : null;
+  const modeKey = 'sg-mode-' + pattern.id;
+  let useChart = false;
+  try { useChart = !!chart && localStorage.getItem(modeKey) !== 'image'; } catch { useChart = !!chart; }
+  const lines = useChart ? evenLines(rows) : rowLinesOf(pattern);
   const rowsEl = h('div', { class: 'rows' });
   const rowBtns = [];
   for (let i = 0; i < rows; i++) {
@@ -55,7 +61,10 @@ export async function patternView(m, q) {
     rowBtns.push(b);
     rowsEl.append(b);
   }
-  const img = h('img', { src: objUrl(pattern.imageBlob), alt: pattern.name, draggable: 'false' });
+  const img = h('img', {
+    src: objUrl(useChart ? chartToBlob(chart, { direction: pattern.direction }) : pattern.imageBlob),
+    alt: pattern.name, draggable: 'false',
+  });
   const stage = h('div', { class: 'pv-stage' }, img, rowsEl);
   const applyZoom = () => {
     stage.style.width = zoom * 100 + '%';
@@ -180,13 +189,18 @@ export async function patternView(m, q) {
     : '';
 
   /* --- tegnforklaring --- */
-  const hasLegend = !!(pattern.legendBlob || pattern.legendText);
+  const hasLegend = useChart || !!(pattern.legendBlob || pattern.legendText);
   let legendOpen = true;
   try { legendOpen = localStorage.getItem('sg-legend') !== '0'; } catch { /* ignorer */ }
   const legendUrl = pattern.legendBlob ? objUrl(pattern.legendBlob) : null;
-  const legendPanel = hasLegend ? h('div', { class: 'legend-panel' + (legendOpen ? '' : ' hidden') },
+  const legendPanel = !hasLegend ? null : useChart
+    ? h('div', { class: 'legend-panel' + (legendOpen ? '' : ' hidden') },
+      h('div', { class: 'legend-list' }, chart.symbols.map((s) => [
+        h('span', { class: 'sw', style: { background: s.color || '#fff' } }, s.glyph || ''), h('span', null, s.meaning || s.key)])),
+      chart.repeat ? h('p', { class: 'small muted', style: { margin: '6px 0 0' } }, 'Rød ramme = rapport som gjentas.') : null)
+    : h('div', { class: 'legend-panel' + (legendOpen ? '' : ' hidden') },
     legendUrl ? h('img', { src: legendUrl, alt: 'Tegnforklaring', onclick: () => showPhoto(legendUrl) }) : null,
-    pattern.legendText ? h('div', { class: 'legend-text' }, pattern.legendText) : null) : null;
+    pattern.legendText ? h('div', { class: 'legend-text' }, pattern.legendText) : null);
   const legendBtn = hasLegend ? h('button', {
     class: 'small' + (legendOpen ? ' on' : ''), 'aria-pressed': String(legendOpen),
     onclick: () => {
@@ -202,7 +216,11 @@ export async function patternView(m, q) {
       back: project ? `#/prosjekt/${project.id}` : `#/oppskrift/${pattern.recipeId}`,
       actions: [legendBtn, h('a', { class: 'btn small', href: `#/monster/${pattern.id}/rediger`, 'aria-label': 'Rediger mønster' }, '✎')].filter(Boolean),
     }),
-    h('div', { class: 'pv-status' }, statusText, projectInfo ? h('span', { class: 'muted small' }, projectInfo) : null),
+    h('div', { class: 'pv-status' }, statusText, projectInfo ? h('span', { class: 'muted small' }, projectInfo) : null,
+      chart ? h('button', {
+        class: 'mode',
+        onclick: () => { try { localStorage.setItem(modeKey, useChart ? 'image' : 'chart'); } catch { /* ignorer */ } rerender(); },
+      }, useChart ? '🖼 Bilde' : '▦ Diagram') : null),
     legendPanel,
     banner,
     h('div', { class: 'pv-main' }, scroller, repeatCol),
@@ -312,11 +330,11 @@ export async function patternEditorView(m, q, { editId } = {}) {
   const st = existing ? {
     source: existing.sourceBlob || existing.imageBlob,
     crop: existing.sourceBlob ? { rot: 0, ...existing.crop } : FULL(),
-    rows: existing.rows, rowLines: existing.rowLines || null, cols: existing.cols || null,
+    rows: existing.rows, rowLines: existing.rowLines || null, cols: existing.cols || null, colLines: existing.colLines || null,
     direction: existing.direction || 'up', repeat: !!existing.repeat, name: existing.name,
     legend: null, legendText: existing.legendText || '',
   } : {
-    source: null, crop: FULL(), rows: 20, rowLines: null, cols: null, direction: 'up', repeat: false,
+    source: null, crop: FULL(), rows: 20, rowLines: null, cols: null, colLines: null, direction: 'up', repeat: false,
     name: patterns.length ? `Mønster ${patterns.length + 1}` : 'Mønster', legend: null, legendText: '',
   };
   if (existing && existing.legendCrop) {
@@ -359,6 +377,7 @@ export async function patternEditorView(m, q, { editId } = {}) {
     st.rows = res.rows;
     st.rowLines = res.rowLines;
     st.cols = res.cols;
+    st.colLines = res.colLines;
     toast(`Fant ${res.rows} rader${res.cols ? ` og ${res.cols} masker` : ''} ✓`);
     drawEditor();
   };
@@ -441,7 +460,7 @@ export async function patternEditorView(m, q, { editId } = {}) {
 
   const name = h('input', { type: 'text', value: st.name });
 
-  const save = async () => {
+  const save = async (then) => {
     if (!st.source) { toast('Velg et bilde av mønsteret først'); return; }
     toast('Lagrer mønster…');
     const imageBlob = await cropImage(st.source, st.crop);
@@ -449,13 +468,15 @@ export async function patternEditorView(m, q, { editId } = {}) {
     const p = existing || { id: db.uid(), recipeId, createdAt: Date.now() };
     Object.assign(p, {
       name: name.value.trim() || 'Mønster', sourceBlob: st.source, crop: st.crop, imageBlob,
-      rows: st.rows, rowLines: st.rowLines, cols: st.cols, direction: st.direction, repeat: st.repeat,
+      rows: st.rows, rowLines: st.rowLines, cols: st.cols, colLines: st.rowLines ? st.colLines : null, direction: st.direction, repeat: st.repeat,
       legendBlob, legendCrop: st.legend ? st.legend.crop : null, legendFromPattern: !!(st.legend && st.legend.fromPattern),
       legendSourceBlob: st.legend && !st.legend.fromPattern ? st.legend.source : null,
       legendText: st.legendText.trim(), updatedAt: Date.now(),
     });
+    if (p.chart && p.chart.rows !== p.rows) toast('Obs: det digitale diagrammet har et annet antall rader');
     await db.put('patterns', p);
     toast('Mønsteret er lagret');
+    if (then === 'chart') { navigate(`#/monster/${p.id}/diagram`, { replace: true }); return; }
     const { current } = await getRecipeBundle(recipeId);
     const live = current && current.status !== 'ferdig' ? current : null;
     navigate(`#/monster/${p.id}${live ? '?p=' + live.id : ''}`, { replace: true });
@@ -474,7 +495,7 @@ export async function patternEditorView(m, q, { editId } = {}) {
   const view = h('div', null,
     topbar(existing ? 'Rediger mønster' : 'Nytt mønster', {
       back: `#/oppskrift/${recipeId}`,
-      actions: [h('button', { class: 'primary small', onclick: save }, 'Lagre')],
+      actions: [h('button', { class: 'primary small', onclick: () => save() }, 'Lagre')],
     }),
     h('div', { class: 'content' },
       h('p', { class: 'muted' }, recipe.name),
@@ -484,8 +505,11 @@ export async function patternEditorView(m, q, { editId } = {}) {
       editor,
       h('h2', null, '4. Tegnforklaring'),
       legendEditor,
+      h('h2', null, '5. Digitalt diagram (valgfritt)'),
+      h('p', { class: 'muted small' }, 'Gjør bildet om til et ordentlig diagram: AI leser symbolene ved hjelp av tegnforklaringen, og du kan rette ruter som blir feil.'),
+      h('button', { onclick: () => save('chart') }, existing && existing.chart ? '▦ Lagre og rediger diagrammet' : '✨ Lagre og lag digitalt diagram'),
       h('div', { class: 'row', style: { marginTop: '18px' } },
-        h('button', { class: 'primary grow', onclick: save }, 'Lagre mønster'),
+        h('button', { class: 'primary grow', onclick: () => save() }, 'Lagre mønster'),
         existing ? h('button', { class: 'danger', onclick: remove }, 'Slett') : null)));
 
   // Åpnet fra fil-visningen med en bestemt side?
